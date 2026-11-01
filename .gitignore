@@ -1,0 +1,17 @@
+.venv/
+.tools/
+.agents/
+.codex/
+.aws/
+__pycache__/
+.pytest_cache/
+*.pyc
+backups/
+.env
+.env.*
+!.env.example
+.pio/
+firmware/include/wifi_config.h
+data/
+models/*.onnx
+models/*.download

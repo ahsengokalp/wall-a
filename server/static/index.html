@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WALL-A · Yer İstasyonu</title><link rel="stylesheet" href="/static/style.css"><script src="/static/app.js" defer></script></head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="WALL-A ana sayfa"><b>W<span>·</span>A</b><div>WALL-A<small>YER İSTASYONU</small></div></a>
+  <div class="nav-label">KONTROL MERKEZİ</div>
+  <nav aria-label="Bölümler"><button class="nav active" data-tab="mission">◉ <span>Operasyon</span><small>01</small></button><button class="nav" data-tab="people">◎ <span>Kişi kayıtları</span><small id="navCount">0</small></button><button class="nav" data-tab="system">⌁ <span>Sistem</span><small>03</small></button></nav>
+  <div class="sidebar-note"><span class="dot"></span> YEREL İŞLEME<p>ESP32-S3 · OV2640<br>Görüntü + yüz algılama</p></div>
+  <div class="sidebar-bottom"><div class="robot-eyes"><i></i><i></i></div><strong>Birlikte öğreniyoruz.</strong><span>Kamera aşaması / v0.2</span></div>
+</aside>
+<div class="shell">
+<header><div class="breadcrumb">WALL-A <span>/</span> <b id="sectionLabel">Operasyon</b></div><div class="header-right"><span>● LOCAL HOST</span><time id="clock"></time></div></header>
+<main>
+<div class="page-heading"><div><p class="eyebrow">GÖRSEL ALGILAMA VE KONTROL</p><h1 id="pageTitle">Operasyon merkezi</h1><p id="pageDescription">Kamerayı yönet, yüzleri algıla, gördüklerini sor.</p></div><span class="version">ESP32-S3 N16R8</span></div>
+<div class="metrics">
+  <div class="metric"><span>PYTHON SUNUCUSU</span><strong id="serverStatus">Kontrol ediliyor</strong><small>127.0.0.1:8000</small></div>
+  <div class="metric"><span>KAMERA BAĞLANTISI</span><strong id="cameraStatus">Henüz denenmedi</strong><small id="cameraMeta">Son kare bekleniyor</small></div>
+  <div class="metric"><span>YÜZ ALGILAMA</span><strong id="visionStatus">Kontrol ediliyor</strong><small id="visionMeta">YuNet · CPU</small></div>
+  <div class="metric"><span>YEREL MODEL</span><strong id="ollamaStatus">Kontrol ediliyor</strong><small id="llmMeta">Görüntü yorumlama</small></div>
+</div>
+<section id="mission" class="tab-content">
+<div class="workspace">
+<section class="panel camera-panel"><div class="panel-title"><h2><span class="dot"></span> Kamera gözlemi</h2><span id="feedMode" class="tag">TEK KARE</span></div>
+<div class="viewfinder"><div id="placeholder"><div class="robot-eyes"><i></i><i></i></div><h3>Önce dünyayı görelim.</h3><p>Kartın adresini gir ve bir kare al.<br>Ya da bilgisayarından fotoğraf yükle.</p></div><div id="imageStage" hidden><img id="preview" alt="Analiz için seçilen görüntü"><svg id="faceOverlay" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="Algılanan yüz kutuları"></svg></div><span id="imageSize" class="image-size">GÖRÜNTÜ BEKLENİYOR</span></div>
+<div class="image-caption"><span id="imageSource">Henüz görüntü alınmadı</span><time id="imageTime"></time></div>
+<div class="camera-controls"><label for="address">ESP32 yerel IP adresi</label><div class="input-row"><input id="address" placeholder="192.168.100.83" autocomplete="off"><button id="capture" class="primary">Fotoğraf çek ↗</button></div></div>
+<div class="feed-controls"><button id="live" class="secondary">▶ Otomatik kontrol</button><button id="analyze" class="secondary" disabled>Yüzleri algıla</button><button id="chooseFile" class="text-button">Fotoğraf yükle ↗</button><input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>
+<p class="hint">Otomatik kontrol: her işlem bittikten 2 saniye sonra yeni kare alınır. LLM sorgusu sırasında bekler.</p>
+<div class="detection-strip"><div><small>SON ALGILAMA</small><strong id="faceSummary">Henüz analiz edilmedi</strong></div><span id="visionTiming">— ms</span></div>
+<div id="faceList" class="face-list"></div>
+</section>
+<section class="panel assistant-panel"><div class="panel-title"><h2>Görüntü asistanı</h2><span class="tag">OLLAMA</span></div>
+<label for="model">Görüntü destekleyen model</label><div class="input-row"><select id="model"><option value="">Kontrol ediliyor…</option></select><button id="refresh" class="icon" aria-label="Bağlantıları ve modelleri yenile">↻</button></div><p id="modelHint" class="hint">Yalnızca yerel modeller kullanılır.</p>
+<label class="checkbox"><input id="cpuOnly" type="checkbox" checked> CPU ile çalıştır <span>GPU hataları için</span></label>
+<label for="question">Ne öğrenmek istiyorsun?</label><textarea id="question" rows="4" maxlength="2000">Bu görüntüde ne görüyorsun?</textarea><div class="suggestions"><button data-question="Masada hangi nesneler var?">Nesneleri anlat</button><button data-question="Görüntüdeki okunabilen yazılar neler? Emin olmadıklarını belirt.">Yazıları oku</button></div>
+<div class="actions"><button id="ask" class="primary" disabled>Bu görüntüye sor ↗</button><button id="captureAsk" class="secondary" disabled>Yeni çek ve sor</button></div>
+<div class="response"><div class="response-title"><span>ASİSTANIN CEVABI</span><span id="duration"></span></div><p id="answer">Bir görüntü alıp merak ettiğini sor.</p></div>
+<div class="info-note"><b>İki ayrı görsel sistem</b><p>Yüz algılama ve kişi eşleştirme küçük yerel modellerle çalışır. Ollama, sahne hakkındaki sorularını cevaplar.</p></div>
+<p class="privacy">Kareler diske kaydedilmez. Kişi kayıtları ad ve yüz temsili olarak bu bilgisayarda saklanır.</p>
+</section></div></section>
+<section id="people" class="tab-content" hidden><div class="people-layout">
+<section class="panel"><div class="panel-title"><h2>Yeni kişi tanıt</h2><span class="tag">YEREL KAYIT</span></div><p class="muted">Önden çekilmiş, aydınlık ve yalnızca bir kişinin yüzünü içeren fotoğraf seç.</p>
+<form id="personForm"><label for="personName">Kişinin adı</label><input id="personName" maxlength="80" placeholder="Örneğin: Ahsen" required autocomplete="off"><label class="photo-picker" for="personPhoto"><span id="personPhotoText">＋ Kişi fotoğrafı seç</span><img id="personPreview" alt="Kayıt için seçilen kişi fotoğrafı" hidden></label><input id="personPhoto" type="file" accept="image/jpeg,image/png,image/webp" required><button id="register" class="primary" type="submit">Kişiyi kaydet ↗</button></form>
+<p class="privacy">Seçtiğin kişiyi bu robotun tanıması için kaydedersin. Fotoğraf kalıcı saklanmaz; ad ve sayısal yüz temsili tutulur. Kayıtları sağdaki listeden silebilirsin.</p></section>
+<section class="panel"><div class="panel-title"><h2>Kayıtlı kişiler</h2><span id="peopleCount" class="tag">0 KİŞİ</span></div><div id="peopleList"><p class="muted">Kayıtlar yükleniyor…</p></div><p class="hint">İlk sürüm kişi başına bir örnek kullanır. Işık ve açı değişimi eşleşmeyi etkileyebilir; belirsiz sonuçlar “Bilinmeyen” gösterilir.</p></section>
+</div></section>
+<section id="system" class="tab-content" hidden><div class="system-layout"><section class="panel"><div class="panel-title"><h2>Donanım ve işleme</h2><span class="tag">YEREL</span></div><dl><dt>Kontrol kartı</dt><dd>ESP32-S3 · 16 MB flash · 8 MB PSRAM</dd><dt>Kamera</dt><dd>OV2640 · 640 × 480 JPEG</dd><dt>Yüz algılama</dt><dd>YuNet · OpenCV · CPU</dd><dt>Kişi eşleştirme</dt><dd>SFace · yerel kayıtlar</dd><dt>Görüntü yorumlama</dt><dd>Yerel Ollama modeli</dd></dl></section>
+<section class="panel"><div class="panel-title"><h2>Performans notları</h2><span class="tag amber">İYİLEŞTİRİLECEK</span></div><p>İlk VLM sorgularında yaklaşık 106–136 saniye görüldü. GPU denemesinde Vulkan hatası oluştu; varsayılan CPU modu kullanılıyor.</p><p class="muted">Model karşılaştırması, GPU hatası, görüntü boyutu ve sıcak başlangıç ölçümleri yapılacaklar.md dosyasında kayıtlı.</p><div class="detection-strip"><div><small>SON KAMERA + ALGILAMA</small><strong id="roundtrip">Henüz ölçülmedi</strong></div></div><p class="hint">Algılama süresi ile kamera aktarımı dahil toplam süre ayrı ölçülür. Bu panel bir video akışı değildir.</p></section></div></section>
+<div id="notice" role="status" aria-live="polite">Bağlantılar kontrol ediliyor…</div>
+<footer><span>WALL-A / YER İSTASYONU</span><span>Gör → Algıla → Etkileşime geç</span></footer>
+</main></div></body></html>
